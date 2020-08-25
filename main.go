@@ -23,17 +23,19 @@ func main() {
 	var requestHeader bool
 	flag.BoolVar(&requestHeader, "v", false, " Make the operation more talkative")
 	var outputFile string
-	flag.StringVar(&outputFile, "o", "", "--output <file> Write to file instead of stdout")
+	flag.StringVar(&outputFile, "o", "default", "--output <file> Write to file instead of stdout")
 	var requestType string
 	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
 	flag.Parse()
 
-	fmt.Println(outputFile)
-	
+	fmt.Println(flag.Args(), requestHeader, outputFile, requestType)
 	if requestType == "GET"{
 		get(flag.Arg(0), requestHeader, outputFile)
 	}else if requestType == "POST"{
 		fmt.Println("POSTリクエスト")
+	}else{
+		flag.Usage()
+		os.Exit(0)
 	}
 
 }
@@ -76,12 +78,10 @@ func get(url string, requestHeader bool, filename string){
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(resp.Status)
-	fmt.Println(string(responseBody))
-
 
 	// -vオプションでファイル名を指定した時
-	if filename != ""{
+	// TODO: ここの条件が気持ち悪いので直したい
+	if filename != "default"{
 		fp, err := os.Create(filename)
 		if err != nil {
 			fmt.Println(err)
@@ -89,9 +89,13 @@ func get(url string, requestHeader bool, filename string){
 		}
 		defer fp.Close()
 
-		fp.WriteString(resp.Status)
 		fp.WriteString(string(responseBody))
+	}else{
+		flag.Usage()
+		os.Exit(0)
 	}
+	fmt.Println(resp.Status)
+	fmt.Println(string(responseBody))
 }
 
 func post(url string){
