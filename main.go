@@ -5,27 +5,41 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 )
 
 func main() {
+	// -hオプション用文言
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `
+	Usage of %s:
+   		%s [OPTIONS] ARGS...
+	Options\n`,
+	os.Args[0],os.Args[0])
+		flag.PrintDefaults()
+	}
+
 	var requestHeader bool
 	flag.BoolVar(&requestHeader, "v", false, " Make the operation more talkative")
 	var outputFile string
 	flag.StringVar(&outputFile, "o", "", "--output <file> Write to file instead of stdout")
-	var responseType string
-	flag.StringVar(&responseType, "X", "GET", "--request <command> Specify request command to use")
+	var requestType string
+	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
 	flag.Parse()
+
+	fmt.Println(outputFile)
 	
-	if responseType == "GET"{
-		get(flag.Arg(0))
-	}else{
-		post(flag.Arg(0))
+	if requestType == "GET"{
+		get(flag.Arg(0), requestHeader, outputFile)
+	}else if requestType == "POST"{
+		fmt.Println("POSTリクエスト")
 	}
 
 }
 
-func get(url string){
+func get(url string, requestHeader bool, filename string){
+	// レスポンスを作成
 	tr := &http.Transport{
 		MaxIdleConns:       10,
 		IdleConnTimeout:    30 * time.Second,
@@ -42,18 +56,42 @@ func get(url string){
 		panic(err)
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
+
+	// -oオプションがあるときリクエスト内容を表示
+	if requestHeader{
+		//rheader, err := ioutil.ReadAll(req.Header)
+		//fmt.Println(string(rheader))
+
+	}
+
+	// リクエストを送信
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	// レスポンスを受信して表示
+	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(resp.Status)
-	fmt.Println(string(body))
+	fmt.Println(string(responseBody))
+
+
+	// -vオプションでファイル名を指定した時
+	if filename != ""{
+		fp, err := os.Create(filename)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer fp.Close()
+
+		fp.WriteString(resp.Status)
+		fp.WriteString(string(responseBody))
+	}
 }
 
 func post(url string){
