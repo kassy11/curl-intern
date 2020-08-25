@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"time"
 )
@@ -59,11 +60,10 @@ func get(url string, requestHeader bool, filename string){
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 
-	// -oオプションがあるときリクエスト内容を表示
+	// -vオプションがあるときリクエスト内容を表示
 	if requestHeader{
-		//rheader, err := ioutil.ReadAll(req.Header)
-		//fmt.Println(string(rheader))
-
+		dump, _ := httputil.DumpRequest(req, true)
+		fmt.Println(string(dump))
 	}
 
 	// リクエストを送信
@@ -80,7 +80,7 @@ func get(url string, requestHeader bool, filename string){
 	}
 
 	// -vオプションでファイル名を指定した時
-	// TODO: ここの条件が気持ち悪いので直したい
+	// TODO: ここの条件が気持ち悪いので直したい, ここのエラー処理
 	if filename != "default"{
 		fp, err := os.Create(filename)
 		if err != nil {
@@ -90,10 +90,8 @@ func get(url string, requestHeader bool, filename string){
 		defer fp.Close()
 
 		fp.WriteString(string(responseBody))
-	}else{
-		flag.Usage()
-		os.Exit(0)
 	}
+
 	fmt.Println(resp.Status)
 	fmt.Println(string(responseBody))
 }
