@@ -20,12 +20,15 @@ func main() {
 	var requestHeader bool
 	flag.BoolVar(&requestHeader, "v", false, " Make the operation more talkative")
 	var outputFile string
-	flag.StringVar(&outputFile, "o", "default", "--output <file> Write to file instead of stdout")
+	flag.StringVar(&outputFile, "o", "", "--output <file> Write to file instead of stdout")
 	var requestType string
 	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
 	flag.Parse()
 
 	fmt.Println(flag.Args(), requestHeader, outputFile, requestType)
+	for i:=0; i<len(os.Args); i++{
+		fmt.Println(os.Args[i])
+	}
 
 	// URLの指定がない時
 	if len(flag.Args())<=0{
@@ -34,8 +37,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	url := flag.Arg(0)
 	if requestType == "GET"{
-		get(flag.Arg(0), requestHeader, outputFile)
+		get(url, requestHeader, outputFile)
 	}else if requestType == "POST"{
 		fmt.Println("POSTリクエスト")
 	}else{
@@ -80,13 +84,18 @@ func get(url string, requestHeader bool, filename string){
 		panic(err)
 	}
 
-	// -vオプションでファイル名を指定した時
-	// TODO: ここの条件が気持ち悪いので直したい, ここのエラー処理
-	if filename == "default"{
+	fmt.Println(contains(os.Args, "-o"))
+
+	// TODO: ここのエラー処理直したい
+	// -oオプションしかなくファイル名が指定されていない時はエラー表示
+	if contains(os.Args, "-o") && filename == ""{
 		fmt.Printf("%s: option -o: requires parameter\n", os.Args[0])
 		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
 		os.Exit(1)
-	}else{
+	}
+
+	// -oオプションがあってファイル名が指定されているときのみファイル作成
+	if contains(os.Args, "-o") && filename != ""{
 		fp, err := os.Create(filename)
 		if err != nil {
 			fmt.Println(err)
@@ -111,3 +120,11 @@ func post(url string){
 
 }
 
+func contains(s []string, e string) bool {
+	for _, v := range s {
+		if e == v {
+			return true
+		}
+	}
+	return false
+}
