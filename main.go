@@ -13,11 +13,7 @@ import (
 func main() {
 	// -hオプション用文言
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `
-	Usage of %s:
-   		%s [OPTIONS] ARGS...
-	Options\n`,
-	os.Args[0],os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage of %s [options...] <url>\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 
@@ -29,9 +25,12 @@ func main() {
 	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
 	flag.Parse()
 
+	fmt.Println(flag.Args(), requestHeader, outputFile, requestType)
+
 	// URLの指定がない時
 	if len(flag.Args())<=0{
-		flag.Usage()
+		fmt.Printf("%s: no URL specified!\n", os.Args[0])
+		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
 		os.Exit(1)
 	}
 
@@ -40,7 +39,8 @@ func main() {
 	}else if requestType == "POST"{
 		fmt.Println("POSTリクエスト")
 	}else{
-		flag.Usage()
+		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
+		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])
 		os.Exit(1)
 	}
 
@@ -66,12 +66,6 @@ func get(url string, requestHeader bool, filename string){
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 
-	// -vオプションがあるときリクエスト内容を表示
-	if requestHeader{
-		dump, _ := httputil.DumpRequest(req, true)
-		fmt.Println(string(dump))
-	}
-
 	// リクエストを送信
 	resp, err := client.Do(req)
 	if err != nil {
@@ -88,7 +82,11 @@ func get(url string, requestHeader bool, filename string){
 
 	// -vオプションでファイル名を指定した時
 	// TODO: ここの条件が気持ち悪いので直したい, ここのエラー処理
-	if filename != "default"{
+	if filename == "default"{
+		fmt.Printf("%s: option -o: requires parameter\n", os.Args[0])
+		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
+		os.Exit(1)
+	}else{
 		fp, err := os.Create(filename)
 		if err != nil {
 			fmt.Println(err)
@@ -97,6 +95,12 @@ func get(url string, requestHeader bool, filename string){
 		defer fp.Close()
 
 		fp.WriteString(string(responseBody))
+	}
+
+	// -vオプションがあるときリクエスト内容を表示
+	if requestHeader{
+		dump, _ := httputil.DumpRequest(req, true)
+		fmt.Println(string(dump))
 	}
 
 	fmt.Println(resp.Status)
