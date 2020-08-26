@@ -13,6 +13,6 @@
 
 ### 実行方法
 1. `cd curl-intern`
-2. `go build -o curl main.go`
-3. `./curl -v -o test.txt http://google.com`
-4. `./curl -v -X POST -d "key=value" https://example.com`
+2. `go build -o kcurl main.go`
+3. GET `./kcurl -v -o test.txt "http://httpbin.org/get"`
+4. POST `./kcurl -v -X POST -d 'key=value' "http://httpbin.org/post"`

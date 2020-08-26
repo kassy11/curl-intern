@@ -29,7 +29,7 @@ func main() {
 	flag.StringVar(&requestType, "X", "GET", "-X, --request <command>  Specify request command to use")
 	flag.Parse()
 
-	//fmt.Printf("%s: option -d: requires parameter", os.Args[0])
+
 
 	// URLの指定がない時
 	if len(flag.Args())<=0{
@@ -38,15 +38,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	if contains(os.Args, "-d") && postValues==""{
+		fmt.Printf("%s: option -d: requires parameter\n", os.Args[0])
+		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
+		os.Exit(1)
+	}
+
 	addr := flag.Arg(0)
 	// postValuesをsplitしてurl.Values{}に格納
 	values := url.Values{}
-	splitEach := strings.Split(postValues, "&")
-	for _, v := range splitEach{
-		splitKeyVaue := strings.Split(v, "=")
-		values.Add(splitKeyVaue[0], splitKeyVaue[1])
+	if postValues != ""{
+		splitEach := strings.Split(postValues, "&")
+		for _, v := range splitEach{
+			splitKeyVaue := strings.Split(v, "=")
+			values.Add(splitKeyVaue[0], splitKeyVaue[1])
+		}
+		fmt.Println(values.Encode())
 	}
-	fmt.Println(values.Encode())
 
 	if requestType == "GET"{
 		get(addr, requestHeader, outputFile)
