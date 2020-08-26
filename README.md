@@ -10,3 +10,8 @@
 
 コマンドオプションは (1) ~ (5) に記載された組み合わせだけではなく、
 任意の組み合わせができるようにする。
+
+### 実行方法
+1. `cd curl-intern`
+2. `go build -o curl main.go`
+3. `./curl -v -o test.txt http://google.com`
