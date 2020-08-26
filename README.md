@@ -15,4 +15,4 @@
 1. `cd curl-intern`
 2. `go build -o curl main.go`
 3. `./curl -v -o test.txt http://google.com`
-4. `./curl -X POST -d "key=value" https://example.com`
+4. `./curl -v -X POST -d "key=value" https://example.com`

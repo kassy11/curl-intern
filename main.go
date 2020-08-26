@@ -39,10 +39,19 @@ func main() {
 	}
 
 	addr := flag.Arg(0)
+	// postValuesをsplitしてurl.Values{}に格納
+	values := url.Values{}
+	splitEach := strings.Split(postValues, "&")
+	for _, v := range splitEach{
+		splitKeyVaue := strings.Split(v, "=")
+		values.Add(splitKeyVaue[0], splitKeyVaue[1])
+	}
+	fmt.Println(values.Encode())
+
 	if requestType == "GET"{
 		get(addr, requestHeader, outputFile)
 	}else if requestType == "POST"{
-		post(addr, requestHeader, postValues)
+		post(addr, requestHeader, values)
 	}else{
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
 		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])
@@ -115,19 +124,8 @@ func get(addr string, requestHeader bool, filename string){
 	fmt.Println(string(responseBody))
 }
 
-func post(addr string, requestHeader bool, query string){
+func post(addr string, requestHeader bool, values url.Values){
 
-	fmt.Println(query)
-	// queryをsplitしてurl.Values{}に格納
-	// TODO: ここのエラー処理をどうするか
-	values := url.Values{}
-	splitEach := strings.Split(query, "&")
-	for _, v := range splitEach{
-		splitKeyVaue := strings.Split(v, "=")
-		values.Add(splitKeyVaue[0], splitKeyVaue[1])
-	}
-
-	fmt.Println(values.Encode())
 
 	// レスポンスを作成
 	tr := &http.Transport{
@@ -141,15 +139,17 @@ func post(addr string, requestHeader bool, query string){
 		},
 		Transport: tr,
 	}
-	req, err := http.NewRequest("POST", addr, nil)
+	req, err := http.NewRequest("POST", addr, strings.NewReader(values.Encode()))
 	if err != nil {
 		panic(err)
 		os.Exit(1)
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
+	// -vオプションがあるときリクエスト内容を表示
 	if requestHeader{
-
+		dump, _ := httputil.DumpRequest(req, true)
+		fmt.Println(string(dump))
 	}
 
 	// リクエストを送信
