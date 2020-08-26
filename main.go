@@ -16,7 +16,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage of %s [options...] <url>\n", os.Args[0])
 		flag.PrintDefaults()
 	}
-
+	
 	var requestHeader bool
 	flag.BoolVar(&requestHeader, "v", false, " Make the operation more talkative")
 	var outputFile string
@@ -24,11 +24,6 @@ func main() {
 	var requestType string
 	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
 	flag.Parse()
-
-	fmt.Println(flag.Args(), requestHeader, outputFile, requestType)
-	for i:=0; i<len(os.Args); i++{
-		fmt.Println(os.Args[i])
-	}
 
 	// URLの指定がない時
 	if len(flag.Args())<=0{
@@ -83,8 +78,6 @@ func get(url string, requestHeader bool, filename string){
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(contains(os.Args, "-o"))
 
 	// TODO: ここのエラー処理直したい
 	// -oオプションしかなくファイル名が指定されていない時はエラー表示
