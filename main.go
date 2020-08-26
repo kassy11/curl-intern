@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -18,12 +20,16 @@ func main() {
 	}
 	
 	var requestHeader bool
-	flag.BoolVar(&requestHeader, "v", false, " Make the operation more talkative")
+	flag.BoolVar(&requestHeader, "v", false, "-v, --verbose  Make the operation more talkative")
 	var outputFile string
-	flag.StringVar(&outputFile, "o", "", "--output <file> Write to file instead of stdout")
+	flag.StringVar(&outputFile, "o", "", "-o, --output <file>  Write to file instead of stdout")
+	var postValues string
+	flag.StringVar(&postValues, "d", "", "-d, --data <data>  HTTP POST data")
 	var requestType string
-	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
+	flag.StringVar(&requestType, "X", "GET", "-X, --request <command>  Specify request command to use")
 	flag.Parse()
+
+	//fmt.Printf("%s: option -d: requires parameter", os.Args[0])
 
 	// URLの指定がない時
 	if len(flag.Args())<=0{
@@ -32,11 +38,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	url := flag.Arg(0)
+	addr := flag.Arg(0)
 	if requestType == "GET"{
-		get(url, requestHeader, outputFile)
+		get(addr, requestHeader, outputFile)
 	}else if requestType == "POST"{
-		post(url)
+		post(addr, requestHeader, postValues)
 	}else{
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
 		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])
@@ -45,7 +51,7 @@ func main() {
 
 }
 
-func get(url string, requestHeader bool, filename string){
+func get(addr string, requestHeader bool, filename string){
 	// レスポンスを作成
 	tr := &http.Transport{
 		MaxIdleConns:       10,
@@ -58,7 +64,7 @@ func get(url string, requestHeader bool, filename string){
 		},
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", addr, nil)
 	if err != nil {
 		panic(err)
 		os.Exit(1)
@@ -109,7 +115,20 @@ func get(url string, requestHeader bool, filename string){
 	fmt.Println(string(responseBody))
 }
 
-func post(url string){
+func post(addr string, requestHeader bool, query string){
+
+	fmt.Println(query)
+	// queryをsplitしてurl.Values{}に格納
+	// TODO: ここのエラー処理をどうするか
+	values := url.Values{}
+	splitEach := strings.Split(query, "&")
+	for _, v := range splitEach{
+		splitKeyVaue := strings.Split(v, "=")
+		values.Add(splitKeyVaue[0], splitKeyVaue[1])
+	}
+
+	fmt.Println(values.Encode())
+
 	// レスポンスを作成
 	tr := &http.Transport{
 		MaxIdleConns:       10,
@@ -122,12 +141,16 @@ func post(url string){
 		},
 		Transport: tr,
 	}
-	req, err := http.NewRequest("POST", url, nil)
+	req, err := http.NewRequest("POST", addr, nil)
 	if err != nil {
 		panic(err)
 		os.Exit(1)
 	}
-	req.Header.Add("If-None-Match", `W/"wyzzy"`)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	if requestHeader{
+
+	}
 
 	// リクエストを送信
 	resp, err := client.Do(req)
@@ -142,7 +165,7 @@ func post(url string){
 	if err != nil {
 		panic(err)
 	}
-	
+
 	fmt.Println(resp.Status)
 	fmt.Println(string(responseBody))
 }
