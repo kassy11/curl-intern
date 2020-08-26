@@ -29,14 +29,19 @@ func main() {
 	flag.StringVar(&requestType, "X", "GET", "--request <command> Specify request command to use")
 	flag.Parse()
 
-	fmt.Println(flag.Args(), requestHeader, outputFile, requestType)
+	// URLの指定がない時
+	if len(flag.Args())<=0{
+		flag.Usage()
+		os.Exit(1)
+	}
+
 	if requestType == "GET"{
 		get(flag.Arg(0), requestHeader, outputFile)
 	}else if requestType == "POST"{
 		fmt.Println("POSTリクエスト")
 	}else{
 		flag.Usage()
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 }
@@ -57,6 +62,7 @@ func get(url string, requestHeader bool, filename string){
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
+		os.Exit(1)
 	}
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 
@@ -70,6 +76,7 @@ func get(url string, requestHeader bool, filename string){
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
+		os.Exit(1)
 	}
 	defer resp.Body.Close()
 
@@ -85,7 +92,7 @@ func get(url string, requestHeader bool, filename string){
 		fp, err := os.Create(filename)
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		defer fp.Close()
 
