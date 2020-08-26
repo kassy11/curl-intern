@@ -10,3 +10,9 @@
 
 コマンドオプションは (1) ~ (5) に記載された組み合わせだけではなく、
 任意の組み合わせができるようにする。
+
+### 実行方法
+1. `cd curl-intern`
+2. `go build -o kcurl main.go`
+3. GET `./kcurl -v -o test.txt "http://httpbin.org/get"`
+4. POST `./kcurl -v -X POST -d 'key=value' "http://httpbin.org/post"`
