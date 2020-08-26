@@ -36,7 +36,7 @@ func main() {
 	if requestType == "GET"{
 		get(url, requestHeader, outputFile)
 	}else if requestType == "POST"{
-		fmt.Println("POSTリクエスト")
+		post(url)
 	}else{
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
 		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])
@@ -110,7 +110,41 @@ func get(url string, requestHeader bool, filename string){
 }
 
 func post(url string){
+	// レスポンスを作成
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Transport: tr,
+	}
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		panic(err)
+		os.Exit(1)
+	}
+	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 
+	// リクエストを送信
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+		os.Exit(1)
+	}
+	defer resp.Body.Close()
+
+	// レスポンスを受信して表示
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	
+	fmt.Println(resp.Status)
+	fmt.Println(string(responseBody))
 }
 
 func contains(s []string, e string) bool {
