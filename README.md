@@ -12,7 +12,7 @@
 任意の組み合わせができるようにする。
 
 ### 実行方法
-1. `cd curl-intern`
-2. `go build -o kcurl main.go`
-3. GET `./kcurl -v -o test.txt "http://httpbin.org/get"`
-4. POST `./kcurl -v -X POST -d 'key=value' "http://httpbin.org/post"`
+1. `cd mycurl`
+2. `go build -o mycurl main.go`
+3. GET `./mycurl -v -o test.txt "http://httpbin.org/get"`
+4. POST `./mycurl -v -X POST -d 'key=value' "http://httpbin.org/post"`
