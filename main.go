@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	// URLの指定がない時
-	if len(flag.Args())<=0{
+	if len(flag.Args()) <= 0 {
 		fmt.Printf("%s: no URL specified!\n", os.Args[0])
 		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
 		os.Exit(1)
@@ -39,7 +39,7 @@ func main() {
 	addr := flag.Arg(0)
 
 	// -dオプションのみでqueryがないとき
-	if contains(os.Args, "-d") && postValues==""{
+	if contains(os.Args, "-d") && postValues == "" {
 		fmt.Printf("%s: option -d: requires parameter\n", os.Args[0])
 		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
 		os.Exit(1)
@@ -60,21 +60,25 @@ func main() {
 
 	// postValuesをsplitしてurl.Values{}に格納
 	values := url.Values{}
-	if postValues != ""{
+	if postValues != "" {
 		splitEach := strings.Split(postValues, "&")
-		for _, v := range splitEach{
+		for _, v := range splitEach {
 			splitKeyVaue := strings.Split(v, "=")
-			values.Add(splitKeyVaue[0], splitKeyVaue[1])
+			if len(splitKeyVaue) == 2 {
+				values.Add(splitKeyVaue[0], splitKeyVaue[1])
+			} else {
+				values.Add(splitKeyVaue[0], "")
+			}
 		}
 		fmt.Println(values.Encode())
 	}
 
 	// GETかPOSTで分岐
-	if requestType == "GET"{
+	if requestType == "GET" {
 		get(client, addr, showHeader, outputFile)
-	}else if requestType == "POST"{
+	} else if requestType == "POST" {
 		post(client, addr, showHeader, values)
-	}else{
+	} else {
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
 		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])
 		os.Exit(1)
@@ -82,7 +86,7 @@ func main() {
 
 }
 
-func get(client *http.Client, addr string, header bool, filename string){
+func get(client *http.Client, addr string, header bool, filename string) {
 
 	req, err := http.NewRequest("GET", addr, nil)
 	if err != nil {
@@ -102,7 +106,7 @@ func get(client *http.Client, addr string, header bool, filename string){
 	defer resp.Body.Close()
 
 	// -vオプションがあるときリクエスト内容を表示
-	if header{
+	if header {
 		dumpRequest(req, resp)
 	}
 
@@ -114,14 +118,14 @@ func get(client *http.Client, addr string, header bool, filename string){
 
 	// TODO: ここのエラー処理直したい
 	// -oオプションしかなくファイル名が指定されていない時はエラー表示
-	if contains(os.Args, "-o") && filename == ""{
+	if contains(os.Args, "-o") && filename == "" {
 		fmt.Printf("%s: option -o: requires parameter\n", os.Args[0])
 		fmt.Printf("%s: try '%s --help' or '%s --manual' for more information\n", os.Args[0], os.Args[0], os.Args[0])
 		os.Exit(1)
 	}
 
 	// -oオプションがあってファイル名が指定されているときのみファイル書き込み
-	if contains(os.Args, "-o") && filename != ""{
+	if contains(os.Args, "-o") && filename != "" {
 		fp, err := os.Create(filename)
 		if err != nil {
 			fmt.Println(err)
@@ -132,12 +136,11 @@ func get(client *http.Client, addr string, header bool, filename string){
 		fp.WriteString(string(responseBody))
 	}
 
-
 	fmt.Println(resp.Status)
 	fmt.Println(string(responseBody))
 }
 
-func post(client *http.Client, addr string, header bool, values url.Values){
+func post(client *http.Client, addr string, header bool, values url.Values) {
 
 	req, err := http.NewRequest("POST", addr, strings.NewReader(values.Encode()))
 	if err != nil {
@@ -155,7 +158,7 @@ func post(client *http.Client, addr string, header bool, values url.Values){
 	defer resp.Body.Close()
 
 	// -vオプションがあるときリクエスト内容を表示
-	if header{
+	if header {
 		dumpRequest(req, resp)
 	}
 
@@ -180,7 +183,7 @@ func contains(s []string, e string) bool {
 
 // -vオプションでリクエスト・レスポンスのヘッダーを表示
 // TODO: できればHTTPSのときのSSL証明書の表示の追加
-func dumpRequest(req *http.Request, resp *http.Response){
+func dumpRequest(req *http.Request, resp *http.Response) {
 	reqDump, _ := httputil.DumpRequest(req, false)
 	respDump, _ := httputil.DumpResponse(resp, false)
 	fmt.Printf("%s", string(reqDump))
