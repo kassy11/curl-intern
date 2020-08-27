@@ -20,8 +20,8 @@ func main() {
 	}
 
 	// オプションの設定
-	var requestHeader bool
-	flag.BoolVar(&requestHeader, "v", false, "-v, --verbose  Make the operation more talkative")
+	var showHeader bool
+	flag.BoolVar(&showHeader, "v", false, "-v, --verbose  Make the operation more talkative")
 	var outputFile string
 	flag.StringVar(&outputFile, "o", "", "-o, --output <file>  Write to file instead of stdout")
 	var postValues string
@@ -71,9 +71,9 @@ func main() {
 
 	// GETかPOSTで分岐
 	if requestType == "GET"{
-		get(client, addr, requestHeader, outputFile)
+		get(client, addr, showHeader, outputFile)
 	}else if requestType == "POST"{
-		post(client, addr, requestHeader, values)
+		post(client, addr, showHeader, values)
 	}else{
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
 		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])
@@ -82,22 +82,29 @@ func main() {
 
 }
 
-func get(client *http.Client, addr string, requestHeader bool, filename string){
+func get(client *http.Client, addr string, header bool, filename string){
 
 	req, err := http.NewRequest("GET", addr, nil)
 	if err != nil {
 		panic(err)
 		os.Exit(1)
 	}
+	req.Header.Set("Authorization", "Bearer access-token")
 	req.Header.Add("If-None-Match", `W/"wyzzy"`)
 
 	// リクエストを送信
 	resp, err := client.Do(req)
+
 	if err != nil {
 		panic(err)
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
+
+	// -vオプションがあるときリクエスト内容を表示
+	if header{
+		dumpRequest(req, resp)
+	}
 
 	// レスポンスを受信して表示
 	responseBody, err := ioutil.ReadAll(resp.Body)
@@ -125,16 +132,12 @@ func get(client *http.Client, addr string, requestHeader bool, filename string){
 		fp.WriteString(string(responseBody))
 	}
 
-	// -vオプションがあるときリクエスト内容を表示
-	if requestHeader{
-		dumpRequest(req)
-	}
 
 	fmt.Println(resp.Status)
 	fmt.Println(string(responseBody))
 }
 
-func post(client *http.Client, addr string, requestHeader bool, values url.Values){
+func post(client *http.Client, addr string, header bool, values url.Values){
 
 	req, err := http.NewRequest("POST", addr, strings.NewReader(values.Encode()))
 	if err != nil {
@@ -143,11 +146,6 @@ func post(client *http.Client, addr string, requestHeader bool, values url.Value
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	// -vオプションがあるときリクエスト内容を表示
-	if requestHeader{
-		dumpRequest(req)
-	}
-
 	// リクエストを送信
 	resp, err := client.Do(req)
 	if err != nil {
@@ -155,6 +153,11 @@ func post(client *http.Client, addr string, requestHeader bool, values url.Value
 		os.Exit(1)
 	}
 	defer resp.Body.Close()
+
+	// -vオプションがあるときリクエスト内容を表示
+	if header{
+		dumpRequest(req, resp)
+	}
 
 	// レスポンスを受信して表示
 	responseBody, err := ioutil.ReadAll(resp.Body)
@@ -175,8 +178,11 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-// TODO: ここの表示を増やす
-func dumpRequest(req *http.Request){
-	dump, _ := httputil.DumpRequest(req, true)
-	fmt.Println(string(dump))
+// -vオプションでリクエスト・レスポンスのヘッダーを表示
+// TODO: できればHTTPSのときのSSL証明書の表示の追加
+func dumpRequest(req *http.Request, resp *http.Response){
+	reqDump, _ := httputil.DumpRequest(req, false)
+	respDump, _ := httputil.DumpResponse(resp, false)
+	fmt.Printf("%s", string(reqDump))
+	fmt.Printf("%s", string(respDump))
 }
