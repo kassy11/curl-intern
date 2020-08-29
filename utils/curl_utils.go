@@ -16,7 +16,7 @@ func Contains(s []string, e string) bool {
 }
 
 // -vオプションでリクエスト・レスポンスのヘッダーを表示
-// TODO: できればHTTPSのときのSSL証明書の表示の追加
+// TODO: できればHTTPSのときのSSL証明書の表示の追加する
 func DumpRequest(req *http.Request, resp *http.Response) {
 	reqDump, _ := httputil.DumpRequest(req, false)
 	respDump, _ := httputil.DumpResponse(resp, false)

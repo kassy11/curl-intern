@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	"github.com/kassy11/mycurl/curl"
 	"github.com/kassy11/mycurl/utils"
 )
@@ -28,8 +29,8 @@ func main() {
 	flag.StringVar(&postValues, "d", "", "-d, --data <data>  HTTP POST data")
 	var requestType string
 	flag.StringVar(&requestType, "X", "GET", "-X, --request <command>  Specify request command to use")
-	flag.Parse()
 
+	flag.Parse()
 	// URLの指定がない時
 	if len(flag.Args()) <= 0 {
 		fmt.Printf("%s: no URL specified!\n", os.Args[0])
@@ -37,7 +38,6 @@ func main() {
 		os.Exit(1)
 	}
 	addr := flag.Arg(0)
-
 	// -dオプションのみでqueryがないとき
 	if utils.Contains(os.Args, "-d") && postValues == "" {
 		fmt.Printf("%s: option -d: requires parameter\n", os.Args[0])
@@ -70,14 +70,13 @@ func main() {
 				values.Add(splitKeyVaue[0], "")
 			}
 		}
-		fmt.Println(values.Encode())
 	}
 
 	// GETかPOSTで分岐
 	if requestType == "GET" {
 		curl.Get(client, addr, showHeader, outputFile)
 	} else if requestType == "POST" {
-		curl.Post(client, addr, showHeader, values)
+		curl.Post(client, addr, showHeader, values, outputFile)
 	} else {
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
 		fmt.Printf("%s: try 'kcurl --help' or 'kcurl --manual' for more information\n", os.Args[0])

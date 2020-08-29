@@ -38,7 +38,7 @@ func Get(client *http.Client, addr string, header bool, filename string) {
 		panic(err)
 	}
 
-	// TODO: ここのエラー処理直したい
+	// TODO: -oのエラー処理を直したい
 	// -oオプションしかなくファイル名が指定されていない時はエラー表示
 	if utils.Contains(os.Args, "-o") && filename == "" {
 		fmt.Printf("%s: option -o: requires parameter\n", os.Args[0])
