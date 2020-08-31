@@ -1,0 +1,19 @@
+{
+  "args": {}, 
+  "data": "", 
+  "files": {}, 
+  "form": {
+    "key": "value", 
+    "key2": "value2"
+  }, 
+  "headers": {
+    "Content-Length": "21", 
+    "Content-Type": "application/x-www-form-urlencoded", 
+    "Host": "httpbin.org", 
+    "User-Agent": "Go-http-client/1.1", 
+    "X-Amzn-Trace-Id": "Root=1-5f49f2d1-6daddd03121d3d6f0e47dec9"
+  }, 
+  "json": null, 
+  "origin": "124.208.71.34", 
+  "url": "http://httpbin.org/post"
+}

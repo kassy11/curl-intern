@@ -4,9 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/kassy11/mycurl/curl"
@@ -58,24 +56,11 @@ func main() {
 		Transport: tr,
 	}
 
-	// postValuesをsplitしてurl.Values{}に格納
-	values := url.Values{}
-	if postValues != "" {
-		splitEach := strings.Split(postValues, "&")
-		for _, v := range splitEach {
-			splitKeyVaue := strings.Split(v, "=")
-			if len(splitKeyVaue) == 2 {
-				values.Add(splitKeyVaue[0], splitKeyVaue[1])
-			} else {
-				values.Add(splitKeyVaue[0], "")
-			}
-		}
-	}
-
 	// GETかPOSTで分岐
 	if requestType == "GET" {
 		curl.Get(client, addr, showHeader, outputFile)
 	} else if requestType == "POST" {
+		values := utils.ParseURL(postValues)
 		curl.Post(client, addr, showHeader, values, outputFile)
 	} else {
 		fmt.Printf("%s: requestType is not correct!\n", os.Args[0])
