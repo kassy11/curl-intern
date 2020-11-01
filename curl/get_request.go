@@ -2,10 +2,10 @@ package curl
 
 import (
 	"fmt"
+	"github.com/kassy11/mycurl/utils"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"github.com/kassy11/mycurl/utils"
 )
 
 func Get(client *http.Client, addr string, header bool, filename string) {

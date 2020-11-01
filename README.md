@@ -1,4 +1,4 @@
-### curlコマンドの実装
+### curl by Golang
 
 ### Usage
 1. `go get github.com/kassy11/mycurl`

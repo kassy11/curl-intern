@@ -25,7 +25,7 @@ func DumpRequest(req *http.Request, resp *http.Response) {
 	fmt.Printf("%s", string(respDump))
 }
 
-func ParseURL(postValues string )url.Values{
+func ParseURL(postValues string) url.Values {
 	values := url.Values{}
 	if postValues != "" {
 		splitEach := strings.Split(postValues, "&")
