@@ -14,7 +14,8 @@ import (
 func main() {
 	// -hオプション用文言
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s [options...] <url>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s [options...] <url>\n", os.Args[0])
+		fmt.Fprintln(os.Stderr, "Options")
 		flag.PrintDefaults()
 	}
 
